@@ -31,7 +31,6 @@ export default function Home() {
           content="SR Wallpapers, Free SR, Supun Rathnayake"
         />
         <link rel="icon" href="/favicon.ico" sizes="any" />
-        <meta name="google-adsense-account" content="ca-pub-9033090968990814" />
       </Head>
       <div className="2xl:flex">
         <div className="2xl:m-4">
