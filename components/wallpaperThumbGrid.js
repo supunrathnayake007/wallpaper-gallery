@@ -81,7 +81,7 @@ export default function WallpaperThumbGrid() {
     try {
       debugger;
       if (!wallpapers[index].downloaded) {
-        setWpLoading(true);
+        //setWpLoading(true);
         const res = await axios.post("/api/loadWallpapers", {
           action: "loadTheWallpaper",
           id: wallpapers[index]._id,
@@ -93,10 +93,51 @@ export default function WallpaperThumbGrid() {
           downloaded: true,
         };
         setWallpapers(updatedWallpapers);
-        setWpLoading(false);
+        //setWpLoading(false);
       }
     } catch (error) {
-      setWpLoading(false);
+      //setWpLoading(false);
+      console.log("wallpaperThumbGrid|loadTheWallpaper|error:" + error.message);
+    }
+  }
+  async function loadTheWallpapers(index) {
+    try {
+      debugger;
+      if (!wallpapers[index].downloaded) {
+        //setWpLoading(true);
+        const ids = [];
+        for (let i = index; i < index + 5 && i < wallpapers.length; i++) {
+          if (wallpapers[i] && wallpapers[i]._id) {
+            ids.push(wallpapers[i]._id);
+          } else {
+            console.error(
+              "Invalid wallpaper object or missing _id at index",
+              i
+            );
+          }
+        }
+        const res = await axios.post("/api/loadWallpapers", {
+          action: "loadTheWallpapers",
+          ids: ids,
+        });
+        const updatedWallpapers = [...wallpapers];
+        for (let i = 0; i < Math.min(res.data.length, 5); i++) {
+          const dataIndex = index + i;
+          if (updatedWallpapers[dataIndex]) {
+            updatedWallpapers[dataIndex] = {
+              ...updatedWallpapers[dataIndex],
+              file_data: res.data[i].file_data,
+              downloaded: true,
+            };
+          } else {
+            console.error(`Index ${dataIndex} out of bounds.`);
+          }
+        }
+        setWallpapers(updatedWallpapers);
+        //setWpLoading(false);
+      }
+    } catch (error) {
+      //setWpLoading(false);
       console.log("wallpaperThumbGrid|loadTheWallpaper|error:" + error.message);
     }
   }
@@ -125,7 +166,7 @@ export default function WallpaperThumbGrid() {
   }
 
   const openFullScreen = async (index) => {
-    await loadTheWallpaper(index);
+    await loadTheWallpapers(index);
     setCurrentImageIndex(index);
   };
 
@@ -148,7 +189,7 @@ export default function WallpaperThumbGrid() {
       currentImageIndex + 1 < wallpapers.length
     ) {
       setCurrentImageIndex(currentImageIndex + 1);
-      await loadTheWallpaper(currentImageIndex + 1);
+      await loadTheWallpapers(currentImageIndex + 1);
     } else {
       if (noMoreWallpapers) {
         setCurrentImageIndex(null);
@@ -157,13 +198,13 @@ export default function WallpaperThumbGrid() {
         await loadWallpaperThumbs(pageNumber);
         setIsLoading(false);
         setCurrentImageIndex(currentImageIndex + 1);
-        await loadTheWallpaper(currentImageIndex + 1);
+        await loadTheWallpapers(currentImageIndex + 1);
       }
     }
   };
 
   const handlePrevious = async () => {
-    await loadTheWallpaper(currentImageIndex - 1);
+    await loadTheWallpapers(currentImageIndex - 1);
     setCurrentImageIndex((prevIndex) =>
       prevIndex !== null && prevIndex > 0 ? prevIndex - 1 : null
     );
