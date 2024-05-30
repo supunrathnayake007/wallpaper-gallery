@@ -3,6 +3,7 @@ import axios from "axios";
 import HashLoaderC from "./loaders/HashLoaderC";
 import Head from "next/head";
 import Image from "next/image";
+import { set, get } from "idb-keyval";
 
 export default function WallpaperThumbGrid() {
   const [wallpapers, setWallpapers] = useState([]);
@@ -15,9 +16,45 @@ export default function WallpaperThumbGrid() {
   const loaderRef = useRef(null);
   const loaderCurrent = loaderRef.current;
 
+  const saveData = async (key, data) => {
+    await set(key, data);
+  };
+
+  const loadData = async (key) => {
+    return await get(key);
+  };
+  const clearIndexedDB = (name) => {
+    const dbName = name; // Replace "your_database_name" with your database name
+    const request = indexedDB.deleteDatabase(dbName);
+
+    request.onsuccess = function () {
+      console.log("IndexedDB cleared successfully");
+    };
+
+    request.onerror = function (event) {
+      console.error("Failed to clear IndexedDB:", event.target.error);
+    };
+  };
+
   useEffect(() => {
-    //debugger;
+    debugger;
     //loadWallpapers(pageNumber).then(setIsLoading(false));
+    let localPageNumber =
+      parseInt(localStorage.getItem("wg_pageNumber"), 10) || 1;
+    setPageNumber(localPageNumber);
+
+    let noMoreWallpapers =
+      JSON.parse(localStorage.getItem("wg_NoMoreWallpapers")) || false;
+    setNoMoreWallpapers(noMoreWallpapers);
+
+    //clearIndexedDB("wg_Data");
+    let wallpaperDb = async () => {
+      debugger;
+      let wallpapers = await loadData("wg_Data");
+      debugger;
+      setWallpapers(wallpapers);
+    };
+    wallpaperDb();
   }, []);
 
   useEffect(() => {
@@ -66,11 +103,20 @@ export default function WallpaperThumbGrid() {
       const responseData = res.data;
       if (!responseData.moreWallpapersAvailable) {
         setNoMoreWallpapers(true);
+        localStorage.setItem("wg_NoMoreWallpapers", JSON.stringify(true));
       } else {
         setWallpapers((prevWallpapers) => [
           ...prevWallpapers,
           ...responseData.wallpapers,
         ]);
+
+        //trying to save data into local store
+        const combinedWallpapers = [...wallpapers, ...responseData.wallpapers];
+        await saveData("wg_Data", combinedWallpapers);
+        const newPageNumber = pageNumber + 1;
+        localStorage.setItem("wg_pageNumber", newPageNumber.toString());
+        ///
+
         setPageNumber(pageNumber + 1);
       }
     } catch (error) {
@@ -133,6 +179,7 @@ export default function WallpaperThumbGrid() {
             console.error(`Index ${dataIndex} out of bounds.`);
           }
         }
+        await saveData("wg_Data", updatedWallpapers);
         setWallpapers(updatedWallpapers);
         //setWpLoading(false);
       }
