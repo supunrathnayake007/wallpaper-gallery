@@ -52,7 +52,11 @@ export default function WallpaperThumbGrid() {
       debugger;
       let wallpapers = await loadData("wg_Data");
       debugger;
-      setWallpapers(wallpapers);
+      if (wallpapers) {
+        setWallpapers(wallpapers);
+      } else {
+        console.log("IndexedDB empty ..");
+      }
     };
     wallpaperDb();
   }, []);

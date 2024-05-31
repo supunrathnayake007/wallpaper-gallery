@@ -1,0 +1,22 @@
+<!-- public/check-cookies.html -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Check Cookies</title>
+  </head>
+  <body>
+    <script>
+      // Set a test cookie
+      document.cookie = "testcookie=1";
+
+      // Check if the cookie is set
+      if (document.cookie.indexOf("testcookie=") !== -1) {
+        // Send message to parent window if cookies are enabled
+        window.parent.postMessage("cookies-enabled", "*");
+      } else {
+        // Send message to parent window if cookies are disabled
+        window.parent.postMessage("cookies-disabled", "*");
+      }
+    </script>
+  </body>
+</html>
