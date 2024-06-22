@@ -21,8 +21,8 @@ export default async function apiHandler(req, res) {
     let result = null;
     const action = body.action;
     if (action === "loadThumbs") {
-      const { viewedIds, pageNumber, dataPerPage } = body;
-      result = await getWallpapersThumb(viewedIds, pageNumber, dataPerPage);
+      const { downloadedIds, pageNumber, dataPerPage } = body;
+      result = await getWallpapersThumb(downloadedIds, pageNumber, dataPerPage);
     } else if (action === "loadTheWallpaper") {
       const { id } = body;
       result = await getFieldById("wallpapers", "file_data", id);

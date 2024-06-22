@@ -13,6 +13,7 @@ export default function WallpaperThumbGrid() {
   const [wpLoading, setWpLoading] = useState(false);
   const [downLoading, setDownLoading] = useState(false);
   const [noMoreWallpapers, setNoMoreWallpapers] = useState(false);
+  const [imageIds, setImageIds] = useState([]);
   const loaderRef = useRef(null);
   const loaderCurrent = loaderRef.current;
 
@@ -34,6 +35,19 @@ export default function WallpaperThumbGrid() {
     request.onerror = function (event) {
       console.error("Failed to clear IndexedDB:", event.target.error);
     };
+  };
+  const getAllDownloadedImageIds = async () => {
+    try {
+      const wallpapers = await get("wg_Data");
+      if (wallpapers && Array.isArray(wallpapers)) {
+        const ids = wallpapers.map((wallpaper) => wallpaper._id);
+        return ids;
+      }
+      return [];
+    } catch (error) {
+      console.error("Error getting image IDs from IndexedDB:", error);
+      return [];
+    }
   };
 
   useEffect(() => {
@@ -96,11 +110,16 @@ export default function WallpaperThumbGrid() {
   async function loadWallpaperThumbs(pageNumber) {
     try {
       const dataPerPage = 5;
+      const fetchImageIds = async () => {
+        const imageIds = await getAllDownloadedImageIds();
+        setImageIds(imageIds);
+        console.log("All image IDs:", imageIds);
+      };
 
       //debugger;
       const res = await axios.post("/api/loadWallpapers", {
         action: "loadThumbs",
-        viewedIds: [],
+        downloadedIds: imageIds,
         dataPerPage,
         pageNumber,
       });
